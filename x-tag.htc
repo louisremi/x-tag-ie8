@@ -1,0 +1,7 @@
+<component lightWeight="true">
+<script>
+
+window.xtag.tagCheck( element ).onInsert.call( element );
+
+</script>
+</component>
