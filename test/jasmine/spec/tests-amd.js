@@ -29,13 +29,12 @@ require(['../../x-tag-ie8.js'], function(xtag){
 		it('should fire onCreate when a new tag is created', function(){
 			var onCreateFired = false;
 			xtag.register('x-foo', {
-				onInsert: function(){
+				onCreate: function(){
 					onCreateFired = true;
 				}
 			});
 
 			var foo = document.createElement('x-foo');
-			document.body.appendChild(foo);
 
 			waitsFor(function(){
 				return onCreateFired;

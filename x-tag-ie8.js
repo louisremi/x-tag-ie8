@@ -3,18 +3,9 @@
   var html = document.documentElement,
     head = document.getElementsByTagName('head')[0],
     stylesheet = document.createElement("style"),
+    createElement = document.createElement,
     xtag,
     i;
-
-  head.appendChild(stylesheet);
-  stylesheet.title = "xtag";
-  i = document.styleSheets.length;
-  while ( i-- ) {
-    if ( document.styleSheets[i].title == "xtag" ) {
-      stylesheet = document.styleSheets[i];
-      break;
-    }
-  }
 
   /**
   * Stores the value of `current` in `source` using the key specified in
@@ -120,8 +111,15 @@
     * @return {array}
     */
     toArray: function(obj){
-      var sliced = Array.prototype.slice.call(obj, 0);
-      return sliced.hasOwnProperty ? sliced : [obj];
+      var arr = [],
+        i = -1,
+        length = obj.length;
+
+      while ( ++i < length ) {
+        arr[i] = obj[i];
+      }
+
+      return arr.hasOwnProperty ? arr : [obj];
     },
 
     /**
@@ -236,27 +234,6 @@
       return source;
     },
 
-    /**
-    * Registers a new x-tag object.
-    *
-    * @param {string} tag The name of the tag.
-    * @param {object} options An object containing custom configuration
-    * options to use for the tag.
-    */
-    register: function(tag, options){
-      xtag.tagList.push(tag);
-      xtag.tags[tag] = xtag.merge({ tagName: tag }, xtag.tagOptions, 
-        xtag.applyMixins(options || {}));
-
-      if ( options.onInsert ) {
-        document.createElement( tag );
-        stylesheet.addRule( tag, "-ms-behavior:url(" + xtag.behaviorUrl + ");" );
-        //stylesheet.innerHTML = stylesheet.innerHTML + tag + "{-ms-behavior:url(" + xtag.behaviorUrl + ");}\n";
-        //console.log(stylesheet.innerHTML); console.log("zob");
-      }
-console.log("registered 2");
-    },
-
     wrap: function(original, fn){
       return function(){
         var args = xtag.toArray(arguments);
@@ -287,9 +264,78 @@ console.log("registered 2");
       return xtag.tagCheck(element) || xtag.tagOptions;
     },
 
+    /**
+    * Registers a new x-tag object.
+    *
+    * @param {string} tag The name of the tag.
+    * @param {object} options An object containing custom configuration
+    * options to use for the tag.
+    */
+    register: function(tag, options){
+      xtag.tagList.push(tag);
+      xtag.tags[tag] = xtag.merge({ tagName: tag }, xtag.tagOptions, 
+        xtag.applyMixins(options || {}));
+
+      if ( options.onInsert ) {
+        createElement( tag );
+        stylesheet.addRule( tag, "-ms-behavior:url(" + xtag.behaviorUrl + ");" );
+      }
+    },
+
+    /**
+    * Extends an element by adding various x-tag related getters, setters
+    * and other properties to it.
+    *
+    * @param {element} element The element to extend.
+    */
+    extendElement: function(element){
+      if (!element.xtag && xtag.tagCheck(element)){
+        element.xtag = {}; // used as general storage
+        var options = xtag.getOptions(element),
+          z;
+        for (z in options.methods){
+          xtag.bindMethod(element, z, options.methods[z]);
+        }
+        for (z in options.setters){
+          xtag.applyAccessor(element, z, 'set', options.setters[z]);
+        }
+        for (z in options.getters){
+          xtag.applyAccessor(element, z, 'get', options.getters[z]);
+        }
+        //xtag.addEvents(element, options.events);
+        if (options.content) element.innerHTML = options.content;
+        options.onCreate.call(element);
+      }
+    },
+
+    /**
+    * Helper method to ensure x-tags that are inserted via innerHTML
+    * are inflated.  
+    *
+    * @param {element} element The element.
+    * @param {html} element The html to insert.
+    */
+    innerHTML: function(element, html){
+      element.innerHTML = html;
+    },
+
+    /**
+    * Binds a method to the specified element under the given key.
+    *
+    * @param {element} element The element to bind the method to.
+    * @param {string} key The name of the key in which to store the
+    * method.
+    * @param {function} method The method/function to bind to the element.
+    */
+    bindMethod: function(element, key, method){
+      element[key] = function(){ 
+        return method.apply(element, xtag.toArray(arguments));
+      };
+    },
+
     applyMixins: function(options){
       if (options.mixins){
-        for (var name in mixins){
+        for (var name in options.mixins){
           var mixin = xtag.mixins[name];
           for (var z in mixin) {
             switch (xtag.typeOf(mixin[z])){
@@ -308,6 +354,22 @@ console.log("registered 2");
       }
       return options;
     }
+  };
+
+  head.appendChild(stylesheet);
+  stylesheet.title = "xtag";
+  i = document.styleSheets.length;
+  while ( i-- ) {
+    if ( document.styleSheets[i].title == "xtag" ) {
+      stylesheet = document.styleSheets[i];
+      break;
+    }
+  }
+
+  document.createElement = function(tag){
+    var element = createElement(tag);
+    xtag.extendElement(element);
+    return element;
   };
 
   if (typeof define == 'function' && define.amd) {

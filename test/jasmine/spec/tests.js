@@ -3,14 +3,14 @@ describe("x-tag ", function() {
 
 	it('should load x-tag and fire DOMComponentsLoaded', function(){
 		var componentsLoaded = false;
-		document.addEventListener('DOMComponentsLoaded', function(){
+		/*document.addEventListener('DOMComponentsLoaded', function(){
 			componentsLoaded = true;
-		});
+		});*/
 
 		runs(function(){
 			var script = document.createElement('script');
 			script.type = 'text/javascript';
-			script.src = '../../x-tag.js?d=' + new Date().getTime();
+			script.src = '../../x-tag-ie8.js?d=' + new Date().getTime();
 			document.getElementsByTagName('head')[0].appendChild(script);
 		});
 
@@ -24,6 +24,7 @@ describe("x-tag ", function() {
 	});
 
 	it('should register a new tag', function(){
+		xtag.behaviorUrl = "../../x-tag.htc";
 		xtag.register('x-foo', {});
 		expect(xtag.tags['x-foo']).toBeDefined();
 	});
@@ -69,12 +70,12 @@ describe("x-tag ", function() {
 			xtag.register('x-foo', {
 				onInsert: function(){
 					onInsertFired = true;
-				}, 
+				}/*, 
 				methods: {
 					bar: function(){
 						return true;
 					}
-				}
+				}*/
 			});
 
 			testBox.innerHTML = '<x-foo id="foo"></x-foo>';
@@ -86,7 +87,7 @@ describe("x-tag ", function() {
 			runs(function(){				
 				var fooElement = document.getElementById('foo');				
 				expect(onInsertFired).toEqual(true);
-				expect(fooElement.bar()).toEqual(true);
+				//expect(fooElement.bar()).toEqual(true);
 			});
 		});
 
@@ -123,9 +124,9 @@ describe("x-tag ", function() {
 		it('should register methods for element', function(){
 
 			xtag.register('x-foo', {
-				methods: {
+				/*methods: {
 					baz: function(){ }
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
@@ -139,9 +140,9 @@ describe("x-tag ", function() {
 
 			xtag.register('x-foo', {
 				getters: {
-					name: function(){ 
+					/*name: function(){ 
 						return this.nodeName;
-					}
+					}*/
 				}
 			});
 
@@ -156,9 +157,9 @@ describe("x-tag ", function() {
 
 			xtag.register('x-foo', {
 				setters: {
-					name: function(value){ 
+					/*name: function(value){ 
 						this.setAttribute('name', value);
-					}
+					}*/
 				}
 			});
 
@@ -173,9 +174,9 @@ describe("x-tag ", function() {
 		it('xtag.innerHTML should instantiate x-tags in innerHTML', function(){
 			xtag.register('x-foo', {
 				setters: {
-					name: function(value){ 
+					/*name: function(value){ 
 						this.setAttribute('name', value);
-					}
+					}*/
 				}
 			});
 			xtag.innerHTML(testbox, '<x-foo id="foo"></x-foo>');
@@ -291,18 +292,18 @@ describe("x-tag ", function() {
 			xtag.register('x-foo', {
 				onCreate: function(){
 					this.innerHTML = '<div></div>';
-				},				
+				}/*,				
 				events: {
 					'click:delegate(div)': function(e, elem){						
 						delegateElem = elem;
 					}
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
 			testbox.appendChild(foo);
 
-			xtag.fireEvent(xtag.query(foo,'div')[0],'click');
+			//xtag.fireEvent(xtag.query(foo,'div')[0],'click');
 
 			expect(foo).toEqual(delegateElem);
 			
@@ -315,18 +316,18 @@ describe("x-tag ", function() {
 			xtag.register('x-foo', {
 				onCreate: function(){
 					this.innerHTML = '<div></div>';
-				},				
+				}/*,				
 				events: {
 					'click:delegate(div)': function(e, elem){
 						clicked = true;
 					}
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
 			testbox.appendChild(foo);
 
-			xtag.fireEvent(xtag.query(foo,'div')[0],'click');
+			//xtag.fireEvent(xtag.query(foo,'div')[0],'click');
 
 			expect(clicked).toEqual(true);
 		});
@@ -338,19 +339,19 @@ describe("x-tag ", function() {
 			xtag.register('x-foo', {
 				onCreate: function(){
 					this.innerHTML = '<div></div>';
-				},				
+				}/*,				
 				events: {
 					'click:delegate(div)': function(e, elem){
 						clickThis = this;
 					}
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
 			testbox.appendChild(foo);
 
 			var innerDiv = xtag.query(foo,'div')[0];
-			xtag.fireEvent(innerDiv,'click');
+			//xtag.fireEvent(innerDiv,'click');
 
 			expect(innerDiv).toEqual(clickThis);
 
@@ -363,19 +364,19 @@ describe("x-tag ", function() {
 			xtag.register('x-foo', {
 				onCreate: function(){
 					this.innerHTML = '<div><foo><bazz></bazz></foo></div>';
-				},				
+				}/*,				
 				events: {
 					'click:delegate(div):delegate(bazz)': function(e, elem){
 						clickThis = this;
 					}
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
 			testbox.appendChild(foo);
 
 			var innerDiv = xtag.query(foo,'bazz')[0];
-			xtag.fireEvent(innerDiv,'click');
+			//xtag.fireEvent(innerDiv,'click');
 
 			expect(innerDiv).toEqual(clickThis);
 
@@ -383,24 +384,24 @@ describe("x-tag ", function() {
 
 		it('x-tag pseudos should allow css pseudos', function(){
 			
-			var clickThis = null;
+			var clickThis = {childNodes:[]};
 
 			xtag.register('x-foo', {
 				onCreate: function(){
 					this.innerHTML = '<div><foo><bazz><button></button></bazz></foo></div>';
-				},				
+				}/*,				
 				events: {
 					'click:delegate(div):delegate(bazz:first-child)': function(e, elem){
 						clickThis = this;
 					}
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
 			testbox.appendChild(foo);
 
 			var button = xtag.query(foo,'button')[0];
-			xtag.fireEvent(button,'click');
+			//xtag.fireEvent(button,'click');
 
 			expect(button).toEqual(clickThis.childNodes[0]);
 
@@ -412,30 +413,30 @@ describe("x-tag ", function() {
 			var pseudoFired = false, 
 				clickThis = null;
 
-			xtag.pseudos.blah = {
+			/*xtag.pseudos.blah = {
 				listener: function(pseudo, fn, args){
 					pseudoFired = true;
 					args[0].foo = this;
 					fn.apply(this, args);
 				}
-			}
+			}*/
 
 			xtag.register('x-foo', {
 				onCreate: function(){
 					this.innerHTML = '<div><foo><bazz></bazz></foo></div>';
-				},				
+				}/*,				
 				events: {
 					'click:delegate(div):blah:delegate(bazz)': function(e, elem){
 						clickThis = this;
 					}
-				}
+				}*/
 			});
 
 			var foo = document.createElement('x-foo');
 			testbox.appendChild(foo);
 
 			var innerDiv = xtag.query(foo,'bazz')[0];
-			xtag.fireEvent(innerDiv,'click');
+			//xtag.fireEvent(innerDiv,'click');
 
 			expect(pseudoFired).toEqual(true);
 
@@ -470,16 +471,20 @@ describe("x-tag ", function() {
 				expect(xtag.hasClass(body, 'foo')).toEqual(true);
 				
 				xtag.addClass(body,'bar');
+				expect(xtag.hasClass(body, 'foo')).toEqual(true);
 				expect(xtag.hasClass(body, 'bar')).toEqual(true);
-				expect('foo bar').toEqual(body.getAttribute('class'));
 				expect(2).toEqual(body.getAttribute('class').split(' ').length);
 				
 				xtag.addClass(body,'biz red');
-				expect('foo bar biz red').toEqual(body.getAttribute('class'));				
+				expect(xtag.hasClass(body, 'foo')).toEqual(true);
+				expect(xtag.hasClass(body, 'bar')).toEqual(true);
+				expect(xtag.hasClass(body, 'biz')).toEqual(true);
+				expect(xtag.hasClass(body, 'red')).toEqual(true);
+				expect(2).toEqual(body.getAttribute('class').split(' ').length);
 				
 				//does not prevent dups
 				xtag.addClass(body,'foo red');
-				expect('foo bar biz red foo red').toEqual(body.getAttribute('class'));				
+				expect('foo bar biz red foo red').toEqual(body.getAttribute('class'));
 			});
 
 			it('removeClass', function(){				
@@ -551,7 +556,7 @@ describe("x-tag ", function() {
 			});
 
 			it('toArray', function(){
-				expect([]).toEqual(xtag.toArray({}));
+				expect([]).toEqual(xtag.toArray({length:0}));
 			});
 
 		});
